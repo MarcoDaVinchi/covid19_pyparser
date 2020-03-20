@@ -3,8 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Resulted .json
+viruscases.json
+
+# Environment file
+.env
+
 # IDE workspace settings
 .vscode/
+
+# Selenium WebDrivers dir
+webdrivers/
 
 # C extensions
 *.so
