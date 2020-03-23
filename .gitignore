@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Resulted .json
-viruscases.json
+# Directory with resulting dumps
+dumps/
 
 # Environment file
 .env
