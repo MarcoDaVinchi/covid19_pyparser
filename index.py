@@ -1,3 +1,4 @@
+import gzip
 import json
 from os import getenv
 from pathlib import Path
@@ -43,10 +44,36 @@ total_cases = 0
 total_deceased = 0
 total_recovered = 0
 
+
+def convert_case_entry(entry, entrykey):
+    """[summary]
+    Convert entry from comma separated string to integer.
+    ( "111,111" -> 111111)
+    Used to count summary statistics.
+    Args:
+        entry ([list])
+        entrykey ([str]): key to which is this entry referred.
+        e.g. "cases","deaths","recovered"
+    Returns:
+        [int]: converted integer.
+    """
+    try:
+        converted_entry = int(entry[entrykey].replace(",", ""))
+    except Exception as e:
+        print(
+            "[EXCEPTION] There is wrong value in entry {} {}".format(
+                entry["country"], entrykey, entry[entrykey]
+            ),
+            e,
+        )
+        converted_entry = 0
+    return converted_entry
+
+
 for entry in entries:
-    total_cases += int(entry["cases"].replace(",", ""))
-    total_deceased += int(entry["deaths"].replace(",", ""))
-    total_recovered += int(entry["recovered"].replace(",", ""))
+    total_cases += convert_case_entry(entry, "cases")
+    total_deceased += convert_case_entry(entry, "deaths")
+    total_recovered += convert_case_entry(entry, "recovered")
 
 total = total_cases, total_deceased, total_recovered
 viruscases["summary"] = {
@@ -61,6 +88,15 @@ print("[LOG] Request status: %s" % requested_cases.status_code)
 with open(dump_path.joinpath("viruscases.json"), "w") as outfile:
     json.dump(viruscases, outfile, indent=4)
 
+with gzip.GzipFile(dump_path.joinpath("viruscases.gz"), "wb") as f:
+    f.write(json.dumps(viruscases).encode("utf-8"))
+
 soup = BeautifulSoup(page, "lxml")
 with open(dump_path.joinpath("wuhanvirus.html"), "w", encoding="utf-8") as outfile:
     outfile.write(str(soup))
+
+with gzip.open(dump_path.joinpath("viruscases.gz"), "rb") as f:
+    unzipped = f.read()
+
+unzipped_json = json.loads(unzipped)
+print("FIN!")
